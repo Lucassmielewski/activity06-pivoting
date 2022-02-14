@@ -1,6 +1,6 @@
 ---
 title: "Activity 6"
-author: "Name"
+author: "Lucas Smielewski"
 output: github_document
 ---
 
@@ -46,7 +46,12 @@ Now, why is `by_speaker` untidy data?
 How would this data be organized if it were tidy?
 Do not use any of your new `{tidyr}` skills yet, only describe it.
 
-**Response**: 
+```{r}
+by_speaker
+```
+
+
+**Response**: It is un-tidy because each variable does not have its own column. We should have a variable for season and a variable for word count.
 
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: If you have any questions, contact your instructor. Otherwise feel free to continue on.
@@ -83,6 +88,14 @@ Remember that you can view the help documentation by using the `?` method in you
 3. Name your code chunk either `pivot_contains` or `pivot_ends` depending on which helper function you used.
 
 
+```{r pivot_ends}
+friends_tidy = by_speaker %>% 
+  pivot_longer(cols = starts_with('Season'),
+               names_to = 'Season',
+               values_to = 'Words')
+
+friends_tidy
+```
 
 
 ### Save the dataset
@@ -94,6 +107,10 @@ We can do this by writing it to a file within our directory.
 2. Call the file that is being created "`friends_tidy.csv`".
 3. Name your code chunk `writing_file`
 
+
+```{r writing_file}
+write_csv(friends_tidy, here::here('data', 'friends_tidy.csv'))
+```
 
 
 
@@ -113,6 +130,10 @@ This is the same information that we were just worked with, but structured in a 
 2. Assign this data file into meaningful objects.
 3. Name this code chunk `read_season_file`.
 
+```{r read_season_file}
+by_season = read_csv(here::here('data', 'by_season.csv'))
+by_season
+```
 
 
 
@@ -122,6 +143,16 @@ Now,
 2. Assign it to an object called `speaker_tidy`, and
 3. Name the code chunk `pivot_speaker`.
 
+```{r pivot_speaker}
+speaker_tidy = by_season %>% 
+  pivot_longer(cols = Chandler:Ross,
+               names_to = 'Speaker',
+               values_to = 'Words')
+
+speaker_tidy
+
+```
+
 
 
 
@@ -129,10 +160,25 @@ Now,
 
 If you were to use `by_season` and your skills from past activities, describe (or code) how you would obtain the total number of words spoken by each season and the total words spoken across the series (challenge, can you display this information in one table?).
 
-**Response**:
+```{r}
+by_season %>% 
+  rowwise() %>% 
+  mutate(sums = sum(Chandler:Ross)) %>% 
+  select(season, sums)
+```
+
+
+**Response**: 
 
 
 If you were to use `by_speaker` and your skills from past activities, describe (or code) how you would obtain the total number of words spoken by each season and the total words spoken across the series (challenge, can you display this information in one table?).
+
+```{r}
+by_speaker %>% 
+summarise(sum(contains(Season)))
+
+```
+
 
 **Response**:
 
@@ -175,6 +221,11 @@ friends_tidy %>%
 Write the code to take the tidy dataset and create one variable for each *speaker*.
 Call this code chunk `speaker_wide`.
 
+```{r speaker_wide}
+speaker_wide <- speaker_tidy %>% 
+  pivot_wider(names_from = Speaker, values_from = Words)
+knitr::kable(speaker_wide)
+```
 
 
 
@@ -234,6 +285,12 @@ tidyr::us_rent_income
 
 2. Assign this to `us_wide`
 
+```{r}
+(us_wide <- pivot_wider(us_rent_income, values_from=c(estimate, moe), 
+                        names_glue = "{variable}_{.value}",
+                        names_from = variable))
+```
+
 
 
 Now, 
@@ -249,6 +306,12 @@ Now,
   Hint: There are some additional arguments in `pivot_longer` that can assist with this. Look at the **Examples** in the help documentation.
 
 2. Assign this to `us_long`
+
+```{r}
+us_long <- us_wide %>% 
+  pivot_longer(cols = income_estimate:rent_moe, names_to = c('variable', 'estimate','moe'), values_to = 'count')
+```
+
 
 
 ## Attribution
